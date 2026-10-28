@@ -1,5 +1,6 @@
 package edu.sv.ues.dam235.equipstock_api.implementations;
 
+import edu.sv.ues.dam235.equipstock_api.entities.Equipo;
 import edu.sv.ues.dam235.equipstock_api.entities.Mantenimiento;
 import edu.sv.ues.dam235.equipstock_api.repositories.EquipoRepository;
 import edu.sv.ues.dam235.equipstock_api.repositories.MantenimientoRepository;
@@ -50,8 +51,13 @@ public class MantenimientoServiceImpl implements MantenimientoService {
 
     @Override
     public Mantenimiento guardar(Mantenimiento mantenimiento) {
-        equipoRepository.findById(mantenimiento.getEquipo().getId())
+        Equipo equipo = equipoRepository.findById(mantenimiento.getEquipo().getId())
                 .orElseThrow(() -> new RuntimeException("Equipo no encontrado"));
+        mantenimiento.setEquipo(equipo);
+        if (mantenimiento.getTecnico() != null) {
+            usuarioRepository.findById(mantenimiento.getTecnico().getId())
+                    .ifPresent(mantenimiento::setTecnico);
+        }
         return mantenimientoRepository.save(mantenimiento);
     }
 
