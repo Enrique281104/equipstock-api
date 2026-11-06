@@ -2,8 +2,10 @@ package edu.sv.ues.dam235.equipstock_api.controllers;
 
 import edu.sv.ues.dam235.equipstock_api.dtos.CategoriaDTO;
 import edu.sv.ues.dam235.equipstock_api.entities.Categoria;
+import edu.sv.ues.dam235.equipstock_api.repositories.EquipoRepository;
 import edu.sv.ues.dam235.equipstock_api.services.CategoriaService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -15,6 +17,7 @@ import java.util.stream.Collectors;
 public class CategoriaController {
 
     private final CategoriaService categoriaService;
+    private final EquipoRepository equipoRepository;
 
     @GetMapping
     public List<CategoriaDTO> listar(@RequestParam(required = false) String nombre) {
@@ -50,6 +53,9 @@ public class CategoriaController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
+        if (equipoRepository.countByCategoriaId(id) > 0) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        }
         categoriaService.eliminar(id);
         return ResponseEntity.noContent().build();
     }
@@ -60,6 +66,7 @@ public class CategoriaController {
         dto.setNombre(c.getNombre());
         dto.setDescripcion(c.getDescripcion());
         dto.setIcono(c.getIcono());
+        dto.setEquiposVinculados(equipoRepository.countByCategoriaId(c.getId()));
         return dto;
     }
 

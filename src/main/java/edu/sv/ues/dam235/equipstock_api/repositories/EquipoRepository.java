@@ -10,4 +10,5 @@ public interface EquipoRepository extends JpaRepository<Equipo, Long> {
     List<Equipo> findByUbicacionId(Long ubicacionId);
     List<Equipo> findByEstado(Equipo.Estado estado);
     long countByEstado(Equipo.Estado estado);
+    long countByCategoriaId(Long categoriaId);
 }

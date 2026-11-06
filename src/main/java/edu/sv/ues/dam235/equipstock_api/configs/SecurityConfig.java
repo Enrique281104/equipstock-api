@@ -4,6 +4,7 @@ import edu.sv.ues.dam235.equipstock_api.utilities.JwtFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -42,10 +43,11 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/actuator/**").permitAll()
-                        .requestMatchers("/api/categorias/**").authenticated()
-                        .requestMatchers("/api/ubicaciones/**").authenticated()
+                        // 1. Permite GET a cualquiera autenticado
+                        .requestMatchers(HttpMethod.GET, "/api/categorias/**", "/api/ubicaciones/**", "/api/equipos/**").authenticated()
+                        // 2. Bloquea POST, PUT, DELETE solo para ADMIN
+                        .requestMatchers("/api/categorias/**", "/api/ubicaciones/**", "/api/equipos/**").hasRole("ADMIN")
                         .requestMatchers("/api/usuarios/**").hasRole("ADMIN")
-                        .requestMatchers("/api/equipos/**").authenticated()
                         .requestMatchers("/api/mantenimientos/**").authenticated()
                         .requestMatchers("/api/dashboard/**").authenticated()
                         .anyRequest().authenticated()
