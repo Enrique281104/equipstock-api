@@ -1,9 +1,11 @@
 package edu.sv.ues.dam235.equipstock_api.controllers;
 
+import edu.sv.ues.dam235.equipstock_api.dtos.RegistroDTO;
 import edu.sv.ues.dam235.equipstock_api.dtos.UsuarioDTO;
 import edu.sv.ues.dam235.equipstock_api.entities.Usuario;
 import edu.sv.ues.dam235.equipstock_api.services.UsuarioService;
 import edu.sv.ues.dam235.equipstock_api.utilities.JwtUtil;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -21,8 +23,15 @@ public class AuthController {
     private final JwtUtil jwtUtil;
 
     @PostMapping("/registro")
-    public ResponseEntity<?> registro(@RequestBody Usuario usuario) {
+    public ResponseEntity<?> registro(@Valid @RequestBody RegistroDTO dto) {
         try {
+            Usuario usuario = new Usuario();
+            usuario.setNombre(dto.getNombre().trim());
+            usuario.setEmail(dto.getEmail().trim());
+            usuario.setPassword(dto.getPassword());
+            usuario.setTelefono(dto.getTelefono());
+            usuario.setRol(Usuario.Rol.TECNICO);
+
             Usuario nuevo = usuarioService.registrar(usuario);
             Map<String, Object> response = new HashMap<>();
             response.put("token", jwtUtil.generateToken(nuevo));
