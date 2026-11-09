@@ -7,4 +7,5 @@ public class UbicacionDTO {
     private Long id;
     private String nombre;
     private String descripcion;
+    private long equiposVinculados;
 }

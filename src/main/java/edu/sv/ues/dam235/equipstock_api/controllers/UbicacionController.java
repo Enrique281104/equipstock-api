@@ -2,8 +2,10 @@ package edu.sv.ues.dam235.equipstock_api.controllers;
 
 import edu.sv.ues.dam235.equipstock_api.dtos.UbicacionDTO;
 import edu.sv.ues.dam235.equipstock_api.entities.Ubicacion;
+import edu.sv.ues.dam235.equipstock_api.repositories.EquipoRepository;
 import edu.sv.ues.dam235.equipstock_api.services.UbicacionService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -15,6 +17,7 @@ import java.util.stream.Collectors;
 public class UbicacionController {
 
     private final UbicacionService ubicacionService;
+    private final EquipoRepository equipoRepository;
 
     @GetMapping
     public List<UbicacionDTO> listar(@RequestParam(required = false) String nombre) {
@@ -50,6 +53,9 @@ public class UbicacionController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
+        if (equipoRepository.countByUbicacionId(id) > 0) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        }
         ubicacionService.eliminar(id);
         return ResponseEntity.noContent().build();
     }
@@ -59,6 +65,7 @@ public class UbicacionController {
         dto.setId(u.getId());
         dto.setNombre(u.getNombre());
         dto.setDescripcion(u.getDescripcion());
+        dto.setEquiposVinculados(equipoRepository.countByUbicacionId(u.getId()));
         return dto;
     }
 
