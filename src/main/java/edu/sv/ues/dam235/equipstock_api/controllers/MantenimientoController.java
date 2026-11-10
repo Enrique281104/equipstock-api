@@ -6,9 +6,12 @@ import edu.sv.ues.dam235.equipstock_api.entities.Mantenimiento;
 import edu.sv.ues.dam235.equipstock_api.entities.Usuario;
 import edu.sv.ues.dam235.equipstock_api.services.MantenimientoService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
@@ -56,6 +59,36 @@ public class MantenimientoController {
         try {
             Mantenimiento actualizado = mantenimientoService.actualizar(id, toEntity(dto));
             return ResponseEntity.ok(toDTO(actualizado));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PostMapping
+    public ResponseEntity<MantenimientoDTO> crear(@AuthenticationPrincipal Usuario actual,
+                                                  @RequestBody MantenimientoDTO dto) {
+        if (actual.getRol() == Usuario.Rol.TECNICO) {
+            dto.setTecnicoId(actual.getId());          // un técnico solo se asigna a sí mismo
+        }
+        return ResponseEntity.ok(toDTO(mantenimientoService.guardar(toEntity(dto))));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<MantenimientoDTO> actualizar(@AuthenticationPrincipal Usuario actual,
+                                                       @PathVariable Long id,
+                                                       @RequestBody MantenimientoDTO dto) {
+        Optional<Mantenimiento> existente = mantenimientoService.buscarPorId(id);
+        if (existente.isEmpty()) return ResponseEntity.notFound().build();
+
+        if (actual.getRol() == Usuario.Rol.TECNICO) {
+            Usuario asignado = existente.get().getTecnico();
+            if (asignado == null || !asignado.getId().equals(actual.getId())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();   // no es suyo
+            }
+            dto.setTecnicoId(actual.getId());          // no puede reasignar
+        }
+        try {
+            return ResponseEntity.ok(toDTO(mantenimientoService.actualizar(id, toEntity(dto))));
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
         }

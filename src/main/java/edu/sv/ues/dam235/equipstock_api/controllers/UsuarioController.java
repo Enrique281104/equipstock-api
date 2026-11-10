@@ -58,6 +58,14 @@ public class UsuarioController {
         }
     }
 
+    @GetMapping("/tecnicos")
+    public List<UsuarioDTO> tecnicos() {
+        return usuarioService.listarTodos().stream()
+                .filter(u -> u.getRol() == Usuario.Rol.TECNICO && Boolean.TRUE.equals(u.getActivo()))
+                .map(this::toDTO)
+                .collect(Collectors.toList());
+    }
+
     private UsuarioDTO toDTO(Usuario u) {
         UsuarioDTO dto = new UsuarioDTO();
         dto.setId(u.getId());
