@@ -10,4 +10,5 @@ public interface MantenimientoRepository extends JpaRepository<Mantenimiento, Lo
     List<Mantenimiento> findByEstado(Mantenimiento.Estado estado);
     List<Mantenimiento> findTop5ByOrderByCreatedAtDesc();
     long countByEstado(Mantenimiento.Estado estado);
+    long countByEquipoId(Long equipoId);
 }

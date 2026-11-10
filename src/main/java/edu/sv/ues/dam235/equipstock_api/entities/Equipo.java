@@ -16,10 +16,10 @@ public class Equipo {
     @Column(nullable = false, length = 150)
     private String nombre;
 
-    @Column(name = "numero_serie", length = 100)
+    @Column(name = "numero_serie", length = 100, unique = true)
     private String numeroSerie;
 
-    @Column(name = "codigo_activo", length = 100)
+    @Column(name = "codigo_activo", length = 100, unique = true)
     private String codigoActivo;
 
     @Enumerated(EnumType.STRING)

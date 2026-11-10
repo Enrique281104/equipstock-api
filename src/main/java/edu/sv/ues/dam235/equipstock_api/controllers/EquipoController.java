@@ -4,8 +4,11 @@ import edu.sv.ues.dam235.equipstock_api.dtos.EquipoDTO;
 import edu.sv.ues.dam235.equipstock_api.entities.Categoria;
 import edu.sv.ues.dam235.equipstock_api.entities.Equipo;
 import edu.sv.ues.dam235.equipstock_api.entities.Ubicacion;
+import edu.sv.ues.dam235.equipstock_api.repositories.MantenimientoRepository;
 import edu.sv.ues.dam235.equipstock_api.services.EquipoService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -17,6 +20,7 @@ import java.util.stream.Collectors;
 public class EquipoController {
 
     private final EquipoService equipoService;
+    private final MantenimientoRepository mantenimientoRepository;
 
     @GetMapping
     public List<EquipoDTO> listar(
@@ -45,16 +49,20 @@ public class EquipoController {
 
     @PostMapping
     public ResponseEntity<EquipoDTO> crear(@RequestBody EquipoDTO dto) {
-        Equipo equipo = toEntity(dto);
-        return ResponseEntity.ok(toDTO(equipoService.guardar(equipo)));
+        try {
+            return ResponseEntity.ok(toDTO(equipoService.guardar(toEntity(dto))));
+        } catch (DataIntegrityViolationException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();   // serie o código repetidos
+        }
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<EquipoDTO> actualizar(@PathVariable Long id,
                                                 @RequestBody EquipoDTO dto) {
         try {
-            Equipo actualizado = equipoService.actualizar(id, toEntity(dto));
-            return ResponseEntity.ok(toDTO(actualizado));
+            return ResponseEntity.ok(toDTO(equipoService.actualizar(id, toEntity(dto))));
+        } catch (DataIntegrityViolationException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();   // debe ir antes
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
         }
@@ -62,6 +70,9 @@ public class EquipoController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
+        if (mantenimientoRepository.countByEquipoId(id) > 0) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();   // tiene historial
+        }
         equipoService.eliminar(id);
         return ResponseEntity.noContent().build();
     }
