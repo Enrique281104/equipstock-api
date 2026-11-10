@@ -47,22 +47,6 @@ public class MantenimientoController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @PostMapping
-    public ResponseEntity<MantenimientoDTO> crear(@RequestBody MantenimientoDTO dto) {
-        Mantenimiento m = toEntity(dto);
-        return ResponseEntity.ok(toDTO(mantenimientoService.guardar(m)));
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<MantenimientoDTO> actualizar(@PathVariable Long id,
-                                                       @RequestBody MantenimientoDTO dto) {
-        try {
-            Mantenimiento actualizado = mantenimientoService.actualizar(id, toEntity(dto));
-            return ResponseEntity.ok(toDTO(actualizado));
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
-    }
 
     @PostMapping
     public ResponseEntity<MantenimientoDTO> crear(@AuthenticationPrincipal Usuario actual,
