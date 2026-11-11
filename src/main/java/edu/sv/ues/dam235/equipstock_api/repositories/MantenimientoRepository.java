@@ -2,6 +2,8 @@ package edu.sv.ues.dam235.equipstock_api.repositories;
 
 import edu.sv.ues.dam235.equipstock_api.entities.Mantenimiento;
 import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.time.LocalDate;
 import java.util.List;
 
 public interface MantenimientoRepository extends JpaRepository<Mantenimiento, Long> {
@@ -11,4 +13,6 @@ public interface MantenimientoRepository extends JpaRepository<Mantenimiento, Lo
     List<Mantenimiento> findTop5ByOrderByCreatedAtDesc();
     long countByEstado(Mantenimiento.Estado estado);
     long countByEquipoId(Long equipoId);
+    long countByEstadoAndFechaProgramadaBefore(Mantenimiento.Estado estado, LocalDate fecha);
+    long countByEstadoAndFechaProgramadaGreaterThanEqual(Mantenimiento.Estado estado, LocalDate fecha);
 }

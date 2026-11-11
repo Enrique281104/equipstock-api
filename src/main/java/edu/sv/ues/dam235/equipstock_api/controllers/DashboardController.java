@@ -9,6 +9,9 @@ import edu.sv.ues.dam235.equipstock_api.repositories.MantenimientoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -36,10 +39,19 @@ public class DashboardController {
         // Métricas de mantenimientos
         dto.setMantenimientosCompletados(
                 mantenimientoRepository.countByEstado(Mantenimiento.Estado.COMPLETADO));
+
+        // Fecha actual de El Salvador
+        LocalDate hoy = LocalDate.now(ZoneId.of("America/El_Salvador"));
+
+    // Mantenimientos en proceso cuya fecha aún no ha vencido
         dto.setMantenimientosEnProceso(
-                mantenimientoRepository.countByEstado(Mantenimiento.Estado.EN_PROCESO));
+                mantenimientoRepository.countByEstadoAndFechaProgramadaGreaterThanEqual(
+                        Mantenimiento.Estado.EN_PROCESO, hoy));
+
+    // Mantenimientos en proceso cuya fecha ya venció
         dto.setMantenimientosVencidos(
-                mantenimientoRepository.countByEstado(Mantenimiento.Estado.VENCIDO));
+                mantenimientoRepository.countByEstadoAndFechaProgramadaBefore(
+                        Mantenimiento.Estado.EN_PROCESO, hoy));
 
         // Actividad reciente
         List<Mantenimiento> recientes = mantenimientoRepository
