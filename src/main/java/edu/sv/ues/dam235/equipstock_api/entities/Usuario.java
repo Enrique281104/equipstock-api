@@ -43,6 +43,9 @@ public class Usuario {
         createdAt = LocalDateTime.now();
     }
 
+    @Column(name = "foto_actualizada")
+    private Long fotoActualizada;
+
     public enum Rol {
         ADMIN, TECNICO
     }

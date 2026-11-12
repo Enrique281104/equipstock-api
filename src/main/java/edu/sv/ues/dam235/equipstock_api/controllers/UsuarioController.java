@@ -75,6 +75,7 @@ public class UsuarioController {
         dto.setRol(u.getRol().name());
         dto.setFotoUrl(u.getFotoUrl());
         dto.setActivo(u.getActivo());
+        dto.setFotoActualizada(u.getFotoActualizada());
         return dto;
     }
 }
