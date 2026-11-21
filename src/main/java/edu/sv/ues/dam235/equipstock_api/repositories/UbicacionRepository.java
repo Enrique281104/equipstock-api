@@ -6,4 +6,9 @@ import java.util.List;
 
 public interface UbicacionRepository extends JpaRepository<Ubicacion, Long> {
     List<Ubicacion> findByNombreContainingIgnoreCase(String nombre);
+
+    boolean existsByNombreIgnoreCase(String nombre);
+
+    boolean existsByNombreIgnoreCaseAndIdNot(String nombre, Long id);
+
 }

@@ -2,6 +2,7 @@ package edu.sv.ues.dam235.equipstock_api.controllers;
 
 import edu.sv.ues.dam235.equipstock_api.dtos.CategoriaDTO;
 import edu.sv.ues.dam235.equipstock_api.entities.Categoria;
+import edu.sv.ues.dam235.equipstock_api.repositories.CategoriaRepository;
 import edu.sv.ues.dam235.equipstock_api.repositories.EquipoRepository;
 import edu.sv.ues.dam235.equipstock_api.services.CategoriaService;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,7 @@ public class CategoriaController {
 
     private final CategoriaService categoriaService;
     private final EquipoRepository equipoRepository;
+    private final CategoriaRepository categoriaRepository;
 
     @GetMapping
     public List<CategoriaDTO> listar(@RequestParam(required = false) String nombre) {
@@ -36,6 +38,12 @@ public class CategoriaController {
 
     @PostMapping
     public ResponseEntity<CategoriaDTO> crear(@RequestBody CategoriaDTO dto) {
+        String nombre = dto.getNombre() == null ? "" : dto.getNombre().trim();
+        if (nombre.isEmpty()) return ResponseEntity.badRequest().build();
+        if (categoriaRepository.existsByNombreIgnoreCase(nombre)) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();   // nombre repetido
+        }
+        dto.setNombre(nombre);
         Categoria categoria = toEntity(dto);
         return ResponseEntity.ok(toDTO(categoriaService.guardar(categoria)));
     }
@@ -43,6 +51,12 @@ public class CategoriaController {
     @PutMapping("/{id}")
     public ResponseEntity<CategoriaDTO> actualizar(@PathVariable Long id,
                                                    @RequestBody CategoriaDTO dto) {
+        String nombre = dto.getNombre() == null ? "" : dto.getNombre().trim();
+        if (nombre.isEmpty()) return ResponseEntity.badRequest().build();
+        if (categoriaRepository.existsByNombreIgnoreCaseAndIdNot(nombre, id)) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        }
+        dto.setNombre(nombre);
         try {
             Categoria actualizada = categoriaService.actualizar(id, toEntity(dto));
             return ResponseEntity.ok(toDTO(actualizada));

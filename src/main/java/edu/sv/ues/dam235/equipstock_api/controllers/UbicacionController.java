@@ -3,6 +3,7 @@ package edu.sv.ues.dam235.equipstock_api.controllers;
 import edu.sv.ues.dam235.equipstock_api.dtos.UbicacionDTO;
 import edu.sv.ues.dam235.equipstock_api.entities.Ubicacion;
 import edu.sv.ues.dam235.equipstock_api.repositories.EquipoRepository;
+import edu.sv.ues.dam235.equipstock_api.repositories.UbicacionRepository;
 import edu.sv.ues.dam235.equipstock_api.services.UbicacionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -18,6 +19,7 @@ public class UbicacionController {
 
     private final UbicacionService ubicacionService;
     private final EquipoRepository equipoRepository;
+    private final UbicacionRepository ubicacionRepository;
 
     @GetMapping
     public List<UbicacionDTO> listar(@RequestParam(required = false) String nombre) {
@@ -36,13 +38,39 @@ public class UbicacionController {
 
     @PostMapping
     public ResponseEntity<UbicacionDTO> crear(@RequestBody UbicacionDTO dto) {
+        String nombre = dto.getNombre() == null ? "" : dto.getNombre().trim();
+
+        if (nombre.isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        if (ubicacionRepository.existsByNombreIgnoreCase(nombre)) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        }
+
+        dto.setNombre(nombre);
+
         Ubicacion ubicacion = toEntity(dto);
         return ResponseEntity.ok(toDTO(ubicacionService.guardar(ubicacion)));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<UbicacionDTO> actualizar(@PathVariable Long id,
-                                                   @RequestBody UbicacionDTO dto) {
+    public ResponseEntity<UbicacionDTO> actualizar(
+            @PathVariable Long id,
+            @RequestBody UbicacionDTO dto) {
+
+        String nombre = dto.getNombre() == null ? "" : dto.getNombre().trim();
+
+        if (nombre.isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        if (ubicacionRepository.existsByNombreIgnoreCaseAndIdNot(nombre, id)) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        }
+
+        dto.setNombre(nombre);
+
         try {
             Ubicacion actualizada = ubicacionService.actualizar(id, toEntity(dto));
             return ResponseEntity.ok(toDTO(actualizada));
