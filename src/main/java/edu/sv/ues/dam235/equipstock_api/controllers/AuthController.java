@@ -3,6 +3,7 @@ package edu.sv.ues.dam235.equipstock_api.controllers;
 import edu.sv.ues.dam235.equipstock_api.dtos.RegistroDTO;
 import edu.sv.ues.dam235.equipstock_api.dtos.UsuarioDTO;
 import edu.sv.ues.dam235.equipstock_api.entities.Usuario;
+import edu.sv.ues.dam235.equipstock_api.services.RecuperacionService;
 import edu.sv.ues.dam235.equipstock_api.services.UsuarioService;
 import edu.sv.ues.dam235.equipstock_api.utilities.JwtUtil;
 import jakarta.validation.Valid;
@@ -21,6 +22,7 @@ public class AuthController {
     private final UsuarioService usuarioService;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+    private final RecuperacionService recuperacionService;
 
     @PostMapping("/registro")
     public ResponseEntity<?> registro(@Valid @RequestBody RegistroDTO dto) {
@@ -59,6 +61,22 @@ public class AuthController {
                     return ResponseEntity.ok(response);
                 })
                 .orElse(ResponseEntity.status(401).build());
+    }
+
+    @PostMapping("/recuperar")
+    public ResponseEntity<Void> recuperar(@RequestBody Map<String, String> body) {
+        recuperacionService.solicitarCodigo(body.get("email"));
+        return ResponseEntity.ok().build();   // siempre 200
+    }
+
+    @PostMapping("/restablecer")
+    public ResponseEntity<?> restablecer(@RequestBody Map<String, String> body) {
+        String error = recuperacionService.restablecer(
+                body.get("email"), body.get("codigo"), body.get("nueva"));
+        if (error != null) {
+            return ResponseEntity.badRequest().body(Map.of("error", error));
+        }
+        return ResponseEntity.ok().build();
     }
 
     private UsuarioDTO toDTO(Usuario u) {
